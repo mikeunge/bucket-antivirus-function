@@ -42,7 +42,18 @@ def lambda_handler(event, context):
         s3.Bucket(AV_DEFINITION_S3_BUCKET).download_file(s3_path, local_path)
         print("Downloading definition file %s complete!" % (local_path))
 
-    clamav.update_defs_from_freshclam(AV_DEFINITION_PATH, CLAMAVLIB_PATH)
+    return_code = clamav.update_defs_from_freshclam(AV_DEFINITION_PATH, CLAMAVLIB_PATH)
+    if return_code != 0:
+        """
+        Raise an exception to "kill" the lambda function instead of quiet failing.
+        With this approach we can use cloudwatch events to trigger alarms for failing database/definition updates.
+        
+        Code 58 :: ClamAV is (probably) outdated and needs manual update.
+        Error message: Update failed. Your network may be down or none of the mirrors listed in /etc/freshclam.conf is working.
+        Check https://www.clamav.net/documents/official-mirror-faq for possible reasons.
+        """
+        raise Exception(f"Freshclam update failed - check the logs for more information. exit_code: {return_code}")
+
     # If main.cvd gets updated (very rare), we will need to force freshclam
     # to download the compressed version to keep file sizes down.
     # The existence of main.cud is the trigger to know this has happened.

@@ -1,0 +1,63 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "WriteCloudWatchLogs",
+      "Effect": "Allow",
+      "Action": [
+        "logs:CreateLogGroup",
+        "logs:CreateLogStream",
+        "logs:PutLogEvents"
+      ],
+      "Resource": "*"
+    },
+    {
+      "Sid": "S3AVScan",
+      "Effect": "Allow",
+      "Action": [
+        "s3:GetObject",
+        "s3:GetObjectTagging",
+        "s3:GetObjectVersion",
+        "s3:PutObjectTagging",
+        "s3:PutObjectVersionTagging"
+      ],
+      "Resource": [
+        "arn:aws:s3:::bucket-en1-t-files-private/*"
+      ]
+    },
+    {
+      "Sid": "S3AVDefinitions",
+      "Effect": "Allow",
+      "Action": [
+        "s3:GetObject",
+        "s3:GetObjectTagging"
+      ],
+      "Resource": [
+        "arn:aws:s3:::bucket-en1-t-av-definitions",
+        "arn:aws:s3:::bucket-en1-t-av-definitions/*"
+      ]
+    },
+    {
+      "Sid": "SNSPublic",
+      "Effect": "Allow",
+      "Action": [
+        "sns:Publish"
+      ],
+      "Resource": [
+        "arn:aws:sns:eu-north-1:880900201349:sns-en1-t-av-scan-start",
+        "arn:aws:sns:eu-north-1:880900201349:sns-en1-t-av-scan-result"
+      ]
+    },
+    {
+      "Sid": "S3HeadObject",
+      "Effect": "Allow",
+      "Action": [
+        "s3:ListBucket"
+      ],
+      "Resource": [
+        "arn:aws:s3:::bucket-en1-t-av-definitions",
+        "arn:aws:s3:::bucket-en1-t-av-definitions/*"
+      ]
+    }
+  ]
+}

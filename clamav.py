@@ -35,7 +35,7 @@ from common import AV_STATUS_INFECTED
 from common import CLAMAVLIB_PATH
 from common import CLAMSCAN_PATH
 from common import FRESHCLAM_PATH
-from common import create_dir
+from common import create_dir, logger
 
 
 RE_SEARCH_DIR = r"SEARCH_DIR\(\"=([A-z0-9\/\-_]*)\"\)"
@@ -60,13 +60,13 @@ def update_defs_from_s3(s3_client, bucket, prefix):
             s3_time = time_from_s3(s3_client, bucket, s3_path)
 
             if s3_best_time is not None and s3_time < s3_best_time:
-                print("Not downloading older file in series: %s" % filename)
+                logger("Not downloading older file in series: %s" % filename)
                 continue
             else:
                 s3_best_time = s3_time
 
             if os.path.exists(local_path) and md5_from_file(local_path) == s3_md5:
-                print("Not downloading %s because local md5 matches s3." % filename)
+                logger("Not downloading %s because local md5 matches s3." % filename)
                 continue
             if s3_md5:
                 to_download[file_prefix] = {
@@ -86,7 +86,7 @@ def upload_defs_to_s3(s3_client, bucket, prefix, local_path):
                 if local_file_md5 != md5_from_s3_tags(
                     s3_client, bucket, os.path.join(prefix, filename)
                 ):
-                    print(
+                    logger(
                         "Uploading %s to s3://%s"
                         % (local_file_path, os.path.join(bucket, prefix, filename))
                     )
@@ -99,12 +99,12 @@ def upload_defs_to_s3(s3_client, bucket, prefix, local_path):
                         Tagging={"TagSet": [{"Key": "md5", "Value": local_file_md5}]},
                     )
                 else:
-                    print(
+                    logger(
                         "Not uploading %s because md5 on remote matches local."
                         % filename
                     )
             else:
-                print("File does not exist: %s" % filename)
+                logger("File does not exist: %s" % filename, True)
 
 
 def update_defs_from_freshclam(path, library_path=""):
@@ -115,7 +115,7 @@ def update_defs_from_freshclam(path, library_path=""):
             ":".join(current_library_search_path()),
             CLAMAVLIB_PATH,
         )
-    print("Starting freshclam with defs in %s." % path)
+    logger("Starting freshclam with defs in %s." % path)
     fc_proc = subprocess.Popen(
         [
             FRESHCLAM_PATH,
@@ -128,9 +128,9 @@ def update_defs_from_freshclam(path, library_path=""):
         env=fc_env,
     )
     output = fc_proc.communicate()[0]
-    print("freshclam output:\n%s" % output)
+    logger("freshclam output:\n%s" % output)
     if fc_proc.returncode != 0:
-        print("Unexpected exit code from freshclam: %s." % fc_proc.returncode)
+        logger("Unexpected exit code from freshclam: %s." % fc_proc.returncode, True)
     return fc_proc.returncode
 
 
@@ -187,7 +187,7 @@ def scan_output_to_json(output):
 def scan_file(path):
     av_env = os.environ.copy()
     av_env["LD_LIBRARY_PATH"] = CLAMAVLIB_PATH
-    print("Starting clamscan of %s." % path)
+    logger("Starting clamscan of %s." % path, True)
     av_proc = subprocess.Popen(
         [CLAMSCAN_PATH, "-v", "-a", "--stdout", "-d", AV_DEFINITION_PATH, path],
         stderr=subprocess.STDOUT,
@@ -195,7 +195,7 @@ def scan_file(path):
         env=av_env,
     )
     output = av_proc.communicate()[0].decode()
-    print("clamscan output:\n%s" % output)
+    logger("clamscan output:\n%s" % output, True)
 
     # Turn the output into a data source we can read
     summary = scan_output_to_json(output)
@@ -206,5 +206,5 @@ def scan_file(path):
         return AV_STATUS_INFECTED, signature
     else:
         msg = "Unexpected exit code from clamscan: %s.\n" % av_proc.returncode
-        print(msg)
+        logger(msg, True)
         raise Exception(msg)

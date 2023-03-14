@@ -26,6 +26,7 @@ from common import AV_SIGNATURE_UNKNOWN
 from common import AV_STATUS_METADATA
 from common import AV_STATUS_CLEAN
 from common import AV_STATUS_INFECTED
+from common import logger
 
 
 # Get all objects in an S3 bucket that are infected
@@ -82,13 +83,13 @@ def main(s3_bucket_name):
     try:
         s3_client.head_bucket(Bucket=s3_bucket_name)
     except Exception:
-        print("S3 Bucket '{}' does not exist".format(s3_bucket_name))
+        logger("S3 Bucket '{}' does not exist".format(s3_bucket_name), True)
         sys.exit(1)
 
     # Scan the objects in the bucket
     s3_object_and_sigs_list = get_objects_and_sigs(s3_client, s3_bucket_name)
     for (key_name, av_signature) in s3_object_and_sigs_list:
-        print("Infected: {}/{}, {}".format(s3_bucket_name, key_name, av_signature))
+        logger("Infected: {}/{}, {}".format(s3_bucket_name, key_name, av_signature), True)
 
 
 if __name__ == "__main__":

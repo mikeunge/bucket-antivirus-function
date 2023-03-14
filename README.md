@@ -106,6 +106,7 @@ the table below for reference.
 | S3_ENDPOINT | The Endpoint to use when interacting wth S3 | None | No |
 | SNS_ENDPOINT | The Endpoint to use when interacting wth SNS | None | No |
 | LAMBDA_ENDPOINT | The Endpoint to use when interacting wth Lambda | None | No |
+| AV_LOGGING_VERBOSE | Only logs the basic flow if this flag is set, errors are still logged! | False | No |
 
 ## S3 Bucket Policy Examples
 

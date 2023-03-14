@@ -18,6 +18,7 @@ import os
 import datadog
 from common import AV_STATUS_CLEAN
 from common import AV_STATUS_INFECTED
+from common import logger
 
 
 def send(env, bucket, key, status):
@@ -50,5 +51,5 @@ def send(env, bucket, key, status):
             "points": 1,
             "tags": metric_tags,
         }
-        print("Sending metrics to Datadog.")
+        logger("Sending metrics to Datadog.")
         datadog.api.Metric.send([scanned_metric, result_metric])

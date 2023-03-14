@@ -40,6 +40,7 @@ AV_PROCESS_ORIGINAL_VERSION_ONLY = os.getenv(
     "AV_PROCESS_ORIGINAL_VERSION_ONLY", "False"
 )
 AV_DELETE_INFECTED_FILES = os.getenv("AV_DELETE_INFECTED_FILES", "False")
+AV_LOGGING_VERBOSE = os.getenv("AV_LOGGING_VERBOSE", False)
 
 AV_DEFINITION_FILE_PREFIXES = ["main", "daily", "bytecode"]
 AV_DEFINITION_FILE_SUFFIXES = ["cld", "cvd"]
@@ -51,7 +52,7 @@ LAMBDA_ENDPOINT = os.getenv("LAMBDA_ENDPOINT", None)
 def create_dir(path):
     if not os.path.exists(path):
         try:
-            print("Attempting to create directory %s.\n" % path)
+            logger("Attempting to create directory %s.\n" % path)
             os.makedirs(path)
         except OSError as exc:
             if exc.errno != errno.EEXIST:
@@ -60,3 +61,8 @@ def create_dir(path):
 
 def get_timestamp():
     return datetime.datetime.utcnow().strftime("%Y/%m/%d %H:%M:%S UTC")
+
+
+def logger(msg, _override = False):
+    if AV_LOGGING_VERBOSE or _override:
+        print(msg);
